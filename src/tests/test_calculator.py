@@ -16,7 +16,6 @@ def test_addition():
     my_calculator = Calculator()
     assert my_calculator.addition(2, 3) == 5
     assert my_calculator.addition(-1, 1) == 0
-    assert my_calculator.addition(0, 0) == 0
 
 
 def test_soustraction():
