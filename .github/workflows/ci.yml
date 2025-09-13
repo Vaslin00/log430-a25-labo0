@@ -6,11 +6,43 @@ on:
   pull_request:
 
 jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker compose build
+
+      - name: Save image as artifact
+        run: docker save labo0_calculator:latest | gzip > image.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar.gz
+
   test:
-    runs-on: self-hosted   # Exécute les tests directement sur ta VM
+    runs-on: self-hosted
+    needs: build
     environment: Test Pipeline CI/CD
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load docker image
+        run: gunzip -c image.tar.gz | docker load
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -26,23 +58,30 @@ jobs:
         run: |
           echo "DB_HOST=127.0.0.1" >> .env
           echo "DB_PORT=3306" >> .env 
-          echo "DB_NAME=labo02_db" >> .env
-          echo "DB_USER=labo02" >> .env 
-          echo "DB_PASS=lab02" >> .env
+          echo "DB_NAME=labo0_db" >> .env
+          echo "DB_USER=labo0" >> .env 
+          echo "DB_PASS=lab0" >> .env
           echo "REDIS_HOST=127.0.0.1" >> .env 
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
 
-      - name: Exécuter les tests
+      - name: Run tests
         working-directory: src
-        run: |
-          python3 -m pytest
+        run: python3 -m pytest
 
   deploy:
     runs-on: self-hosted
-    needs: test   # Ne se lance que si les tests passent
+    needs: test
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load docker image
+        run: gunzip -c image.tar.gz | docker load
 
       - name: Déploiement local
         run: |
@@ -50,4 +89,4 @@ jobs:
           echo "Déploiement sur la VM en cours..."
 
           docker compose down || true
-          docker compose up -d --build
+          docker compose up -d
