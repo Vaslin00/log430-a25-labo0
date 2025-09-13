@@ -9,39 +9,31 @@ jobs:
   test:
     runs-on: self-hosted
     steps:
-      - name: Checkout du dépôt
-        run: |
-          git clone ${{ github.repository_url }} .
-          git status
+      - uses: actions/checkout@v4
 
-      - name: Setup Python 3.11
-        run: |
-          sudo apt update
-          sudo apt install python3.11 python3.11-venv python3.11-dev -y
-          python3.11 -m pip install --upgrade pip
-          python3.11 -m pip install -r requirements.txt
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: Créer fichier .env
+      - name: Installer requirements.txt
         run: |
-          echo "DB_HOST=127.0.0.1" >> .env
-          echo "DB_PORT=3306" >> .env 
-          echo "DB_NAME=labo02_db" >> .env
-          echo "DB_USER=labo02" >> .env 
-          echo "DB_PASS=lab02" >> .env
-          echo "REDIS_HOST=127.0.0.1" >> .env 
-          echo "REDIS_PORT=6379" >> .env
-          echo "REDIS_DB=0" >> .env
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Exécuter les tests
-        run: |
-          python3.11 -m pytest src
+        working-directory: src
+        run: python3 -m pytest
 
   deploy:
     runs-on: self-hosted
     needs: test
     steps:
+      - uses: actions/checkout@v4
+
       - name: Déploiement local
         run: |
+          cd $GITHUB_WORKSPACE
           echo "Déploiement sur la VM en cours..."
           docker compose down || true
           docker compose up -d --build
