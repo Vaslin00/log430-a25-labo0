@@ -49,9 +49,5 @@ jobs:
           cd $GITHUB_WORKSPACE
           echo "Déploiement sur la VM en cours..."
 
-          # Arrête et supprime les conteneurs existants si besoin
           docker compose down || true
-
-          # Reconstruit et démarre avec l'image nommée labo0-calculator
-          docker compose build
-          docker compose up -d
+          docker compose up -d --build
