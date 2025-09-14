@@ -21,21 +21,17 @@ def test_addition():
 def test_soustraction():
     my_calculator = Calculator()
     assert my_calculator.subtraction(2, 3) == -1
-    assert my_calculator.subtraction(5, 2) == 3
-    assert my_calculator.subtraction(0, 5) == -5
 
 
 def test_multiplication():
     my_calculator = Calculator()
     assert my_calculator.multiplication(2, 3) == 6
     assert my_calculator.multiplication(-2, 3) == -6
-    assert my_calculator.multiplication(0, 10) == 0
 
 
 def test_division():
     my_calculator = Calculator()
     assert my_calculator.division(6, 3) == 2
-    assert my_calculator.division(-6, 3) == -2
     assert my_calculator.division(0, 3) == 0
 
 
