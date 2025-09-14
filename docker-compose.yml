@@ -1,6 +1,6 @@
 services:
   calculator:
     build: .
-    image:
+    image: python:3.11
     volumes:
       - .:/app
