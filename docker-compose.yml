@@ -1,6 +1,6 @@
 services:
   calculator:
     build: .
-    image: labo0-calculator:latest
+    image:
     volumes:
       - .:/app

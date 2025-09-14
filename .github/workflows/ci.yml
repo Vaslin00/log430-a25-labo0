@@ -9,37 +9,27 @@ jobs:
   test:
     runs-on: self-hosted
     steps:
-      - name: Checkout du dépôt
-        uses: actions/checkout@v3
-
-      - name: Vérifier la version de Python
-        run: python3.11 --version
-
-      - name: Installer les dépendances
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Installer requirements.txt
         run: |
-          python3.11 -m pip install --upgrade pip
-          python3.11 -m pip install -r requirements.txt
-          python3.11 -m pip install pytest
-
-      - name: Debug - Afficher le contenu
-        run: |
-          ls -la
-          ls -la src
-
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
       - name: Exécuter les tests
-        env:
-          PYTHONPATH: src
-        run: python3.11 -m pytest
+        working-directory: src
+        run: python3 -m pytest
 
   deploy:
     runs-on: self-hosted
     needs: test
     steps:
-      - name: Checkout du dépôt
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Déploiement local
         run: |
+          cd $GITHUB_WORKSPACE
           echo "Déploiement sur la VM en cours..."
           docker compose down || true
           docker compose up -d --build
